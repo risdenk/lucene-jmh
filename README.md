@@ -10,7 +10,7 @@ Testing against all fields having float value and separate field only small hand
 
 | Benchmark                                                       | Mode  | Cnt | Score and Error  | Units |
 |-----------------------------------------------------------------|-------|-----|------------------|-------|
-| MyBenchmark.testMaxFloatFunction |                              | thrpt | 25  | 65.668 ±  2.724  | ops/s |
+| MyBenchmark.testMaxFloatFunction                                | thrpt | 25  | 65.668 ±  2.724  | ops/s |
 | MyBenchmark.testMaxFloatFunctionNewFloatFieldSource             | thrpt | 25  | 113.779 ±  8.229 | ops/s |
 | MyBenchmark.testNewMaxFloatFunction                             | thrpt | 25  | 64.588 ±  1.154  | ops/s |
 | MyBenchmark.testNewMaxFloatFunctionNewFloatFieldSource          | thrpt | 25  | 115.084 ± 12.421 | ops/s |
