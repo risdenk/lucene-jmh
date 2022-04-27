@@ -1,5 +1,22 @@
 # lucene-jmh
 
+## Build
+```
+mvn clean verify
+```
+
+## Usage
+```
+# Standard
+java -jar target/benchmarks.jar
+
+# Output to json
+java -jar target/benchmarks.jar -rf json
+
+# With async-profiler
+java -jar target/benchmarks.jar -prof async:libPath=/Users/risdenk/Downloads/async-profiler-2.7-macos/build/libasyncProfiler.so\;output=jfr
+```
+
 ## Initial Results from 500k docs
 
 Testing against all fields having float value and separate field only small handful having float values:
