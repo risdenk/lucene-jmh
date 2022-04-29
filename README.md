@@ -27,14 +27,14 @@ Testing against all fields having float value and separate field only small hand
 
 | Benchmark                                                       | Mode  | Cnt | Score and Error  | Units |
 |-----------------------------------------------------------------|-------|-----|------------------|-------|
-| MyBenchmark.testMaxFloatFunction                                | thrpt | 25  | 69.949 ± 4.043   | ops/s |
-| MyBenchmark.testMaxFloatFunctionNewFloatFieldSource             | thrpt | 25  | 112.326 ± 3.228  | ops/s |
-| MyBenchmark.testNewMaxFloatFunction                             | thrpt | 25  | 93.216 ± 2.757   | ops/s |
-| MyBenchmark.testNewMaxFloatFunctionNewFloatFieldSource          | thrpt | 25  | 123.364 ± 7.861  | ops/s |
-| MyBenchmark.testMaxFloatFunctionRareField                       | thrpt | 25  | 257.339 ± 33.849 | ops/s |
-| MyBenchmark.testMaxFloatFunctionNewFloatFieldSourceRareField    | thrpt | 25  | 287.175 ± 22.840 | ops/s |
-| MyBenchmark.testNewMaxFloatFunctionRareField                    | thrpt | 25  | 235.268 ± 4.103  | ops/s |
-| MyBenchmark.testNewMaxFloatFunctionNewFloatFieldSourceRareField | thrpt | 25  | 272.397 ± 8.406  | ops/s |
+| MyBenchmark.testMaxFloatFunction                                | thrpt | 25  | 64.159  ±  2.031 | ops/s |
+| MyBenchmark.testNewMaxFloatFunction                             | thrpt | 25  | 94.997  ±  2.365 | ops/s |
+| MyBenchmark.testMaxFloatFunctionNewFloatFieldSource             | thrpt | 25  | 123.191 ±  9.291 | ops/s |
+| MyBenchmark.testNewMaxFloatFunctionNewFloatFieldSource          | thrpt | 25  | 123.817 ±  6.191 | ops/s |
+| MyBenchmark.testMaxFloatFunctionRareField                       | thrpt | 25  | 244.921 ±  6.439 | ops/s |
+| MyBenchmark.testNewMaxFloatFunctionRareField                    | thrpt | 25  | 239.288 ±  5.136 | ops/s |
+| MyBenchmark.testMaxFloatFunctionNewFloatFieldSourceRareField    | thrpt | 25  | 271.521 ±  3.870 | ops/s |
+| MyBenchmark.testNewMaxFloatFunctionNewFloatFieldSourceRareField | thrpt | 25  | 279.334 ± 10.511 | ops/s |
 
 ## References
 * https://issues.apache.org/jira/browse/LUCENE-10534
