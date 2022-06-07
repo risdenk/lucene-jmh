@@ -31,42 +31,23 @@
 
 package io.risdenk;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.FloatDocValuesField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queries.function.valuesource.MaxFloatFunction;
 import org.apache.lucene.queries.function.valuesource.NewFloatFieldSource;
 import org.apache.lucene.queries.function.valuesource.NewMaxFloatFunction;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.ByteBuffersDirectory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 
-public class MyBenchmark {
+public class BenchmarkLUCENE10534LUCENE10542 extends BenchmarkBase {
   @State(Scope.Benchmark)
-  public static class MyState {
-    public ByteBuffersDirectory dir;
-    public IndexReader indexReader;
-    public IndexSearcher indexSearcher;
-    
+  public static class MyState extends BaseState {
     public Query maxFloatFunctionQuery;
     public Query maxFloatFunctionNewFloatFieldSourceQuery;
     public Query newMaxFloatFunctionQuery;
@@ -78,37 +59,9 @@ public class MyBenchmark {
     public Query newMaxFloatFunctionNewFloatFieldSourceRareFieldQuery;
 
     @Setup(Level.Trial)
+    @Override
     public void doSetup() throws Exception {
-      Random r = new Random(42);
-      //int numDocs = Math.abs(r.nextInt());
-      int numDocs = 500000;
-      int numRareDocs = 100;
-      System.out.println("Num Docs: " + numDocs);
-      String fieldName = "field-" + r.nextInt();
-      String rareFieldName = "rarefield-" + r.nextInt();
-      Analyzer analyzer = new StandardAnalyzer();
-      ByteBuffersDirectory dir = new ByteBuffersDirectory();
-      IndexWriterConfig config = new IndexWriterConfig(analyzer);
-      try (IndexWriter writer = new IndexWriter(dir, config)) {
-        List<Document> docs = new ArrayList<>(numDocs / 1000);
-        for(int i=0; i < numDocs; i++) {
-          Document document = new Document();
-          document.add(new FloatDocValuesField(fieldName, r.nextFloat()));
-          if (i > numDocs - numRareDocs) {
-            document.add(new FloatDocValuesField(rareFieldName, r.nextFloat()));
-          }
-          docs.add(document);
-          if (i % 1000 == 0) {
-            writer.addDocuments(docs);
-            docs.clear();
-          }
-        }
-        writer.addDocuments(docs);
-        writer.forceMerge(1);
-      }
-
-      indexReader = DirectoryReader.open(dir);
-      indexSearcher = new IndexSearcher(indexReader);
+      super.doSetup();
 
       maxFloatFunctionQuery = new FunctionQuery(new MaxFloatFunction(new ValueSource[]{new FloatFieldSource(fieldName)}));
       maxFloatFunctionNewFloatFieldSourceQuery = new FunctionQuery(new MaxFloatFunction(new ValueSource[]{new NewFloatFieldSource(fieldName)}));
@@ -119,18 +72,6 @@ public class MyBenchmark {
       maxFloatFunctionNewFloatFieldSourceRareFieldQuery = new FunctionQuery(new MaxFloatFunction(new ValueSource[]{new NewFloatFieldSource(rareFieldName)}));
       newMaxFloatFunctionRareFieldQuery = new FunctionQuery(new NewMaxFloatFunction(new ValueSource[]{new FloatFieldSource(rareFieldName)}));
       newMaxFloatFunctionNewFloatFieldSourceRareFieldQuery = new FunctionQuery(new NewMaxFloatFunction(new ValueSource[]{new NewFloatFieldSource(rareFieldName)}));
-    }
-
-    @TearDown(Level.Trial)
-    public void doTearDown() throws Exception {
-      if (dir != null) {
-        dir.close();
-        dir = null;
-      }
-      if (indexReader != null) {
-        indexReader.close();
-        indexReader = null;
-      }
     }
   }
 
