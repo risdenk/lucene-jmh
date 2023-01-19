@@ -31,6 +31,9 @@
 
 package io.risdenk;
 
+import org.apache.lucene.expressions.Expression;
+import org.apache.lucene.expressions.SimpleBindings;
+import org.apache.lucene.expressions.js.JavascriptCompiler;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.ConstValueSource;
@@ -39,6 +42,7 @@ import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queries.function.valuesource.NewFloatFieldSource;
 import org.apache.lucene.queries.function.valuesource.ProductFloatFunction;
 import org.apache.lucene.queries.function.valuesource.SumFloatFunction;
+import org.apache.lucene.search.DoubleValuesSource;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -52,12 +56,15 @@ public class BenchmarkConstantFunctions extends BenchmarkBase {
   public static class MyState extends BaseState {
     public Query basicMathQuery1;
     public Query basicNoMathQuery1;
+    public Query basicQueryLuceneCompiler1;
 
     public Query basicMathQuery2;
     public Query basicNoMathQuery2;
+    public Query basicQueryLuceneCompiler2;
 
     public Query basicMathQuery3;
     public Query basicNoMathQuery3;
+    public Query basicQueryLuceneCompiler3;
 
     @Setup(Level.Trial)
     @Override
@@ -67,6 +74,11 @@ public class BenchmarkConstantFunctions extends BenchmarkBase {
       // sum(product(10,10),fieldA)
       basicMathQuery1 = new FunctionQuery(new SumFloatFunction(new ValueSource[]{new ProductFloatFunction(new ValueSource[]{new ConstValueSource(10), new ConstValueSource(10)}), new NewFloatFieldSource(fieldName)}));
       basicNoMathQuery1 = new FunctionQuery(new SumFloatFunction(new ValueSource[]{new ConstValueSource((float) (10*10)), new NewFloatFieldSource(fieldName)}));
+
+      Expression expr1 = JavascriptCompiler.compile("(10 * 10) + fieldA");
+      SimpleBindings bindings1 = new SimpleBindings();
+      bindings1.add("fieldA", DoubleValuesSource.fromFloatField(fieldName));
+      basicQueryLuceneCompiler1 = new FunctionQuery(ValueSource.fromDoubleValuesSource(expr1.getDoubleValuesSource(bindings1)));
 
       // product(product(div(sum(product(1,0.1),dwn),sum(product(250,0.1),adp)),1000),1000)
       basicMathQuery2 = new FunctionQuery(
@@ -112,6 +124,11 @@ public class BenchmarkConstantFunctions extends BenchmarkBase {
           })
       );
 
+      Expression expr2 = JavascriptCompiler.compile("(((1 * 0.1) + fieldA) / ((250 * 0.1) + fieldA)) * 1000 * 1000");
+      SimpleBindings bindings2 = new SimpleBindings();
+      bindings2.add("fieldA", DoubleValuesSource.fromFloatField(fieldName));
+      basicQueryLuceneCompiler2 = new FunctionQuery(ValueSource.fromDoubleValuesSource(expr2.getDoubleValuesSource(bindings2)));
+
       // div(sum(product(-1,product(1.99,1.99)),1.99), fieldA)
       basicMathQuery3 = new FunctionQuery(
           new DivFloatFunction(
@@ -134,17 +151,27 @@ public class BenchmarkConstantFunctions extends BenchmarkBase {
               new FloatFieldSource(fieldName)
           )
       );
+
+      Expression expr3 = JavascriptCompiler.compile("((-1 * (1.99 * 1.99)) + 1.99) / fieldA");
+      SimpleBindings bindings3 = new SimpleBindings();
+      bindings3.add("fieldA", DoubleValuesSource.fromFloatField(fieldName));
+      basicQueryLuceneCompiler3 = new FunctionQuery(ValueSource.fromDoubleValuesSource(expr3.getDoubleValuesSource(bindings3)));
     }
   }
 
   @Benchmark
   public TopDocs testBasicMath1(MyState state) throws Exception {
-      return state.indexSearcher.search(state.basicMathQuery1, 10);
+    return state.indexSearcher.search(state.basicMathQuery1, 10);
   }
 
   @Benchmark
   public TopDocs testBasicNoMath1(MyState state) throws Exception {
     return state.indexSearcher.search(state.basicNoMathQuery1, 10);
+  }
+
+  @Benchmark
+  public TopDocs testBasicLuceneCompiler1(MyState state) throws Exception {
+    return state.indexSearcher.search(state.basicQueryLuceneCompiler1, 10);
   }
 
   @Benchmark
@@ -158,6 +185,11 @@ public class BenchmarkConstantFunctions extends BenchmarkBase {
   }
 
   @Benchmark
+  public TopDocs testBasicLuceneCompiler2(MyState state) throws Exception {
+    return state.indexSearcher.search(state.basicQueryLuceneCompiler2, 10);
+  }
+
+  @Benchmark
   public TopDocs testBasicMath3(MyState state) throws Exception {
     return state.indexSearcher.search(state.basicMathQuery3, 10);
   }
@@ -165,5 +197,10 @@ public class BenchmarkConstantFunctions extends BenchmarkBase {
   @Benchmark
   public TopDocs testBasicNoMath3(MyState state) throws Exception {
     return state.indexSearcher.search(state.basicNoMathQuery3, 10);
+  }
+
+  @Benchmark
+  public TopDocs testBasicLuceneCompiler3(MyState state) throws Exception {
+    return state.indexSearcher.search(state.basicQueryLuceneCompiler3, 10);
   }
 }
